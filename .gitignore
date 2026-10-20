@@ -1,0 +1,13 @@
+# Dependencias
+node_modules/
+
+# Datos locales (la nube usa Turso)
+data/
+
+# Variables de entorno y archivos de Vercel
+.env
+.env.local
+.vercel/
+
+# Registros
+*.log
