@@ -24,6 +24,8 @@ import {
   recortarLecturas,
   leerConfig,
   guardarConfig,
+  estadoBaseDatos,
+  enNube,
 } from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -561,7 +563,7 @@ let insercionesDesdeLimpieza = 0;
 
 // ------------------------------------------------------------------- rutas API
 export async function manejar(req, res) {
-  const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+  const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
   let ruta = url.pathname;
   const params = url.searchParams;
   // En Vercel el catch-all entrega los segmentos en req.query.path.
@@ -579,6 +581,19 @@ export async function manejar(req, res) {
   }
 
   try {
+    // --- diagnóstico (no exige base de datos) ---
+    if (ruta === "/api/salud" && req.method === "GET") {
+      const base_de_datos = await estadoBaseDatos();
+      return json(res, 200, {
+        ok: true,
+        hora: ahoraISO(),
+        nube: EN_VERCEL,
+        turso: enNube,
+        node: process.version,
+        base_de_datos,
+      });
+    }
+
     await initDB();
 
     // --- recepción de datos del ESP32 ---

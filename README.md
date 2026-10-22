@@ -147,6 +147,7 @@ curl -X POST https://tu-proyecto.vercel.app/api/lecturas ^
 | `GET` | `/api/energia` | Consumo y ahorro (kWh y S/) |
 | `GET` | `/api/estado` | Estado del servidor y del dispositivo |
 | `GET` | `/api/exportar` | CSV/JSON/XLS (`?formato=csv`) |
+| `GET` | `/api/salud` | Diagnóstico: estado de la conexión a la base de datos |
 | `GET/POST` | `/api/configuracion` | Aula, potencia, tarifa |
 | `POST` | `/api/simulador` | Demo (solo local) |
 
@@ -172,6 +173,8 @@ Filtros del historial: `rango`, `presencia` (`1`/`0`), `modo`, `anomalias=1`, `o
 
 | Problema | Solución |
 |---|---|
+| `500: FUNCTION_INVOCATION_FAILED` al abrir el panel | Faltan las variables de Turso (o son incorrectas). La API ya no se cae: abre `https://tu-proyecto.vercel.app/api/salud` para ver el error exacto, corrige las variables y **redeploy** |
+| `"base_de_datos": {"conectada": false}` en `/api/salud` | Revisa `TURSO_DATABASE_URL` (debe empezar por `libsql://`), el token y que la base exista |
 | `Falta configurar la base de datos en Vercel` | Agrega `TURSO_DATABASE_URL` y `TURSO_AUTH_TOKEN` en Vercel y redeploy |
 | El ESP32 responde 401 | La clave del firmware debe coincidir con `clave_dispositivo` (por defecto `esp32-aula1`) |
 | No conecta desde el ESP32 | Verifica la URL completa con `/api/lecturas` y que sea `https://` en Vercel |
