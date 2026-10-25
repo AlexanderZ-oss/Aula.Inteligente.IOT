@@ -25,10 +25,10 @@ const char* WIFI_SSID = "TU_RED_WIFI";
 const char* WIFI_PASS = "TU_CONTRASENA";
 
 // URL completa del servidor.
-//   Nube (Vercel):  https://TU-PROYECTO.vercel.app/api/lecturas
+//   Nube (Vercel):  https://proyecto-iot-tan.vercel.app/api/lecturas
 //   Local:          http://192.168.1.10:3000/api/lecturas  (IP de la PC)
 // Si usas HTTPS (Vercel) el programa acepta el certificado automáticamente.
-const char* SERVIDOR = "https://TU-PROYECTO.vercel.app/api/lecturas";
+const char* SERVIDOR = "https://proyecto-iot-tan.vercel.app/api/lecturas";
 
 const char* CLAVE_DISPOSITIVO = "esp32-aula1";  // debe coincidir con el panel
 const char* ID_DISPOSITIVO   = "esp32-aula1";
