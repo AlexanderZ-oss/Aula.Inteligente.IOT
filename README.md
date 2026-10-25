@@ -69,6 +69,13 @@ INSERT OR IGNORE INTO configuracion (clave, valor) VALUES
    turso db shell aula-inteligente < schema.sql
    ```
 
+   O desde tu PC, sin instalar nada (muestra el error real si falla):
+   ```powershell
+   $env:TURSO_DATABASE_URL = "libsql://aula-inteligente-....turso.io"
+   $env:TURSO_AUTH_TOKEN   = "eyJ..."
+   node aplicar-esquema.mjs
+   ```
+
 También puedes pegar el contenido de `schema.sql` en el **SQL shell** del panel de Turso.
 
 ## 3. Desplegar en Vercel
@@ -162,6 +169,7 @@ Filtros del historial: `rango`, `presencia` (`1`/`0`), `modo`, `anomalias=1`, `o
 ├── server.js             API + servidor local (módulo compartido)
 ├── db.js                 Capa SQL (SQLite local / Turso)
 ├── schema.sql            Esquema SQL de la base de datos
+├── aplicar-esquema.mjs   Aplica el esquema a Turso desde tu PC
 ├── api/[...path].js      Función serverless de Vercel
 ├── simular-esp32.js      Emulador del dispositivo
 ├── firmware/esp32_aula/  Sketch de Arduino IDE
