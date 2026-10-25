@@ -10,7 +10,7 @@ import http from "node:http";
 import os from "node:os";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import {
   CONFIG_DEFECTO,
   initDB,
@@ -581,6 +581,28 @@ export async function manejar(req, res) {
   }
 
   try {
+    // --- pruebas aisladas (no tocan la base de datos) ---
+    if (ruta === "/api/ping" && req.method === "GET") {
+      return json(res, 200, {
+        ok: true,
+        mensaje: "La función serverless funciona.",
+        hora: ahoraISO(),
+        node: process.version,
+      });
+    }
+    if (ruta === "/api/diagnostico" && req.method === "GET") {
+      const urlConfigurada = process.env.TURSO_DATABASE_URL || "";
+      return json(res, 200, {
+        ok: true,
+        hora: ahoraISO(),
+        node: process.version,
+        vercel: EN_VERCEL,
+        turso_url_configurada: Boolean(urlConfigurada),
+        turso_url_valida: /^libsql:\/\//i.test(urlConfigurada),
+        turso_token_configurado: Boolean(process.env.TURSO_AUTH_TOKEN),
+      });
+    }
+
     // --- diagnóstico (no exige base de datos) ---
     if (ruta === "/api/salud" && req.method === "GET") {
       const base_de_datos = await estadoBaseDatos();
@@ -810,20 +832,23 @@ export async function manejar(req, res) {
 }
 
 // --------------------------------------------------------------------- arranque
-const ejecutadoDirecto = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
+export const servidor = http.createServer((req, res) => {
+  const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
+  if (url.pathname.startsWith("/api/")) return manejar(req, res);
+  if (req.method !== "GET") return textoError(res, 405, "Método no permitido.");
+  return servirEstatico(res, url.pathname);
+});
 
-if (ejecutadoDirecto) {
-  const servidor = http.createServer((req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname.startsWith("/api/")) return manejar(req, res);
-    if (req.method !== "GET") return textoError(res, 405, "Método no permitido.");
-    return servirEstatico(res, url.pathname);
-  });
-
-  const arrancar = async () => {
-    await initDB();
-    config = await leerConfig();
-    const total = await contarLecturas();
+/**
+ * Arranca el servidor local. Solo lo usa `iniciar.js` (npm start).
+ * En Vercel este código nunca se ejecuta: la función solo exporta `manejar`.
+ */
+export async function arrancar() {
+  await initDB();
+  config = await leerConfig();
+  const total = await contarLecturas();
+  await new Promise((resolve, reject) => {
+    servidor.once("error", reject);
     servidor.listen(PUERTO, "0.0.0.0", () => {
       if (total === 0) activarSimulador(true); // primera vez sin hardware → demo
       const ip = ipLocal();
@@ -836,20 +861,13 @@ if (ejecutadoDirecto) {
       console.log(` Base de datos: SQLite local (data/aula.db) · ${total} lecturas reales`);
       console.log(` Modo demostración: ${simuladorActivo ? "ACTIVO (se apaga solo al llegar datos reales)" : "inactivo"}`);
       console.log("──────────────────────────────────────────────");
+      resolve();
     });
-  };
-
-  const cerrar = () => {
-    clearInterval(temporizadorSim);
-    servidor.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 1000).unref();
-  };
-
-  process.on("SIGINT", cerrar);
-  process.on("SIGTERM", cerrar);
-
-  arrancar().catch((error) => {
-    console.error("[arranque]", error);
-    process.exit(1);
   });
+}
+
+export function cerrar() {
+  clearInterval(temporizadorSim);
+  servidor.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1000).unref();
 }

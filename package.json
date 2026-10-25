@@ -5,8 +5,8 @@
   "description": "Panel de monitoreo IoT (Aula Inteligente) con servidor local para recibir lecturas del ESP32 por WiFi.",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
+    "start": "node iniciar.js",
+    "dev": "node --watch iniciar.js",
     "probar": "node simular-esp32.js"
   },
   "engines": {

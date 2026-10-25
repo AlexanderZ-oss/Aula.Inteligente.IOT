@@ -167,10 +167,13 @@ Filtros del historial: `rango`, `presencia` (`1`/`0`), `modo`, `anomalias=1`, `o
 ├── app.js                Lógica y gráficos del panel
 ├── styles.css
 ├── server.js             API + servidor local (módulo compartido)
+├── iniciar.js            Arranque del servidor local (npm start)
 ├── db.js                 Capa SQL (SQLite local / Turso)
 ├── schema.sql            Esquema SQL de la base de datos
 ├── aplicar-esquema.mjs   Aplica el esquema a Turso desde tu PC
 ├── api/[...path].js      Función serverless de Vercel
+├── api/ping.js           Prueba mínima de función
+├── api/diagnostico.js    Diagnóstico de variables de entorno
 ├── simular-esp32.js      Emulador del dispositivo
 ├── firmware/esp32_aula/  Sketch de Arduino IDE
 ├── data/aula.db          SQLite local (no se sube a Git)
