@@ -831,6 +831,12 @@ export async function manejar(req, res) {
   }
 }
 
+/** Handler por defecto: permite que Vercel use server.js como entrypoint si el
+ *  proyecto está configurado como "Node.js" en lugar de sitio estático. */
+export default async function handler(req, res) {
+  return manejar(req, res);
+}
+
 // --------------------------------------------------------------------- arranque
 export const servidor = http.createServer((req, res) => {
   const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
@@ -844,13 +850,18 @@ export const servidor = http.createServer((req, res) => {
  * En Vercel este código nunca se ejecuta: la función solo exporta `manejar`.
  */
 export async function arrancar() {
-  await initDB();
-  config = await leerConfig();
-  const total = await contarLecturas();
+  let total = 0;
+  try {
+    await initDB();
+    config = await leerConfig();
+    total = await contarLecturas();
+  } catch (error) {
+    console.error("[arranque] La base de datos no está disponible:", error.message);
+  }
   await new Promise((resolve, reject) => {
     servidor.once("error", reject);
     servidor.listen(PUERTO, "0.0.0.0", () => {
-      if (total === 0) activarSimulador(true); // primera vez sin hardware → demo
+      if (total === 0 && !EN_VERCEL) activarSimulador(true); // solo demo local
       const ip = ipLocal();
       console.log("──────────────────────────────────────────────");
       console.log(" Aula Inteligente — servidor local");
